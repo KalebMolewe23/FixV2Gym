@@ -47,18 +47,8 @@ class MemberController extends Controller
             $qrCodeImage = $writer->write($qrCode);
             $member->qrcode = base64_encode($qrCodeImage->getString());
 
-            // Tentukan status berdasarkan tanggal
-            $endDate = Carbon::parse($member->end_training);
+            $endDate = $member->end_training;
             $currentDate = Carbon::now();
-
-            if ($currentDate->lessThanOrEqualTo($endDate)) {
-                $member->status_label = 'Active';
-                $member->status_class = 'btn bgl-success text-success';
-            }
-            else {
-                $member->status_label = 'Non-Active';
-                $member->status_class = 'btn bgl-danger text-danger';
-            }
 
             $remainingDays = $currentDate->diffInDays($endDate, false);
             $member->time_remaining = $currentDate->diffForHumans($endDate, [
@@ -74,7 +64,7 @@ class MemberController extends Controller
             }
         
             if ($member->show_button && $formattedPhoneNumber) {
-                $message = urlencode("Halo, ini dari Elite Fitness Kediri. Kami ingin mengingatkan bahwa keanggotaan Anda akan segera berakhir pada tanggal " . $endDate->format('d-m-Y') . ". Mohon konfirmasi untuk perpanjangan member Anda. Terima kasih!");
+                $message = urlencode("Halo, ini dari Elite Fitness Kediri. Kami ingin mengingatkan bahwa keanggotaan Anda akan segera berakhir pada tanggal " . $endDate . ". Mohon konfirmasi untuk perpanjangan member Anda. Terima kasih!");
                 $member->wa_link = "https://wa.me/{$formattedPhoneNumber}?text={$message}";
             } else {
                 $member->wa_link = null;
@@ -86,7 +76,8 @@ class MemberController extends Controller
         $trainer = DB::table('trainers')->where('status', 'Aktif')->get();
 
         $member = DB::table('users')
-                ->join('member_gym', 'users.id', '=', 'member_gym.idmember')
+                ->select('*','users.id AS users_id')
+                ->leftjoin('member_gym', 'users.id', '=', 'member_gym.idmember')
                 ->where('users.role', 'member')
                 ->get();
 
@@ -97,6 +88,12 @@ class MemberController extends Controller
             'member' => $member,
             'active' => $memberActive,
         ]);
+    }
+
+    public function memberData(Request $request)
+    {
+        $member = Member_gym::with('trainer')->where('id', $request->id)->first();
+        return response()->json($member);
     }
 
     public function add_member(Request $request)
@@ -189,7 +186,7 @@ class MemberController extends Controller
             'idpaket' => $request->idpaket,
             'total_price' => $request->total_price,
             'start_training' => $request->start_training,
-            'end_training' => $request->end_training,
+            'end_training' => date('Y-m-d 23:59:59', strtotime($request->end_training)),
         ]);
 
         return redirect()->route('admin.data_member');

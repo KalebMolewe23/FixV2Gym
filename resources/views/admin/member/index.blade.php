@@ -108,7 +108,18 @@
                             <!-- Status -->
                             <div class="col-xl-2 col-lg-6 col-sm-4 mb-3 text-end">
                                 <div class="d-flex justify-content-end">
-                                <span class="btn {{ $v_active->status_class }} fs-18 font-w600">{{ $v_active->status_label }}</span>
+
+                                @php
+                                    if ($v_active->end_training >= now()) {
+                                        $status_label = 'Active';
+                                        $status_class = 'btn bgl-success text-success';
+                                    } else {
+                                        $status_label = 'Non-Active';
+                                        $status_class = 'btn bgl-danger text-danger';
+                                    }
+                                @endphp
+
+                                <span class="btn {{ $status_class }} fs-18 font-w600">{{ $status_label }}</span>
                                     <div class="dropdown ms-4">
                                         <div class="btn-link" data-bs-toggle="dropdown">
                                             <svg width="24" height="24" viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -118,14 +129,12 @@
                                             </svg>
                                         </div>
                                         <div class="dropdown-menu dropdown-menu-right">
-                                            <a 
-                                                class="dropdown-item" 
-                                                href="javascript:void(0);" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#editMemberModal" 
+                                            <button
+                                                type="button" 
+                                                class="dropdown-item edit-data-member"
                                                 data-id="{{ $v_active->id }}">
                                                 Ubah Data
-                                            </a>
+                                            </button>
                                             @if($v_active->show_button)
                                                 <a class="dropdown-item" href="{{ $v_active->wa_link }}" target="_blank">
                                                     Hubungi Sekarang
@@ -208,7 +217,7 @@
                                 <option value="">-- Pilih Member --</option>
                                 @foreach ($member as $m)
                                     @if ($m->end_training < now())
-                                    <option value="{{ $m->id }}">{{ $m->name }}</option>
+                                    <option value="{{ $m->users_id }}">{{ $m->name }}</option>
                                     @endif
                                 @endforeach
                             </select>
@@ -284,6 +293,7 @@
     </div>
 </div>
 
+<!-- Edit Member -->
 <div class="modal fade" id="editMemberModal" tabindex="-1" aria-labelledby="editMemberModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -294,7 +304,7 @@
             <form id="editMemberForm" action="" method="POST">
                 @csrf
                 @method('PUT')
-                <input type="hidden" name="id" id="edit_member_id">
+                <input type="hidden" name="id" id="edit_member_id_gym">
                 <input type="hidden" name="total_price" id="edit_input_total_price">
                 <div class="modal-body">
                     <div class="row mb-3">
@@ -303,13 +313,13 @@
                             <select class="form-control" name="idmember" id="edit_idmember" required>
                                 <option value="">-- Pilih Member --</option>
                                 @foreach ($member as $m)
-                                    <option value="{{ $m->id }}">{{ $m->name }}</option>
+                                    <option value="{{ $m->users_id }}">{{ $m->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col">
                             <label class="form-label">Paket</label>
-                            <select class="form-control" name="idpaket" id="edit_idpaket" required onchange="calculateEditEndTraining()">
+                            <select class="form-control" name="idpaket" id="edit_idpaket" required>
                                 <option value="">-- Pilih Paket --</option>
                                 @foreach ($paket as $p)
                                     <option value="{{ $p->id }}" data-days="{{ $p->days }}">{{ $p->packet_name }}</option>
@@ -478,114 +488,16 @@
         // Event listener untuk pilihan paket
         idPaketElement.addEventListener('change', calculateEndTraining);
     });
-</script>
-<script>
-    document.querySelectorAll('.dropdown-item').forEach(item => {
-        item.addEventListener('click', function () {
-            const memberId = this.getAttribute('data-id');
 
-            // Ambil URL dari route Laravel
-            const fetchUrl = `{{ route('admin.members.editmember', ':id') }}`.replace(':id', memberId);
-
-            // Fetch data dari server
-            fetch(fetchUrl)
-                .then(response => response.json())
-                .then(data => {
-                    // Isi form modal dengan data
-                    document.getElementById('edit_member_id').value = data.id;
-                    document.getElementById('edit_idmember').value = data.idmember;
-                    document.getElementById('edit_idpaket').value = data.idpaket;
-                    document.getElementById('edit_start_training').value = data.start_training;
-                    document.getElementById('edit_end_training').value = data.end_training;
-
-                    // Centang trainer jika perlu
-                    const useTrainer = document.getElementById('edit_useTrainer');
-                    useTrainer.checked = data.use_trainer;
-                    document.getElementById('edit_trainerSection').style.display = data.use_trainer ? 'block' : 'none';
-
-                    // Isi data trainer jika ada
-                    document.getElementById('edit_idpacket_trainer').value = data.idpacket_trainer;
-                    document.getElementById('edit_biaya').value = data.biaya || 0;
-                    document.getElementById('edit_point').value = data.point || 0;
-                })
-                .catch(error => console.error('Error:', error));
-        });
-    });
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-    const editIdPaketElement = document.getElementById('edit_idpaket');
-    const editBiayaElement = document.getElementById('edit_biaya');
-    const editTotalPriceElement = document.getElementById('edit_total_price');
-    const editTotalPriceInput = document.getElementById('edit_input_total_price');
-    const editUseTrainerCheckbox = document.getElementById('edit_useTrainer');
-    const editTrainerSection = document.getElementById('edit_trainerSection');
-    const editPacketTrainerSelect = document.getElementById('edit_idpacket_trainer');
-    const editPointInput = document.getElementById('edit_point');
-    const editStartTrainingInput = document.getElementById('edit_start_training');
-    const editEndTrainingInput = document.getElementById('edit_end_training');
-
-    // Harga paket gym dari backend
-    const paketPrices = @json($paket->pluck('price', 'id'));
-    console.log('data harga paket:', paketPrices);
-
-    // Format nilai ke mata uang Rupiah
-    function formatToRupiah(value) {
-        return value.toLocaleString('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-        });
-    }
-
-    // Hitung total harga (paket + biaya trainer)
-    function calculateEditTotalPrice() {
-        const paketPrice = parseFloat(paketPrices[editIdPaketElement.value] || 0);
-        const trainerCost = parseFloat(editBiayaElement.value || 0);
-        const totalPrice = paketPrice + trainerCost;
-
-        // Update tampilan dan input tersembunyi
-        editTotalPriceElement.textContent = formatToRupiah(totalPrice);
-        editTotalPriceInput.value = totalPrice.toFixed(2); // Simpan dalam format angka
-    }
-
-    // Event: Ketika paket gym dipilih
-    editIdPaketElement.addEventListener('change', calculateEditTotalPrice);
-
-    // Event: Ketika biaya trainer diubah
-    editBiayaElement.addEventListener('input', calculateEditTotalPrice);
-
-    // Event: Ketika checkbox "Gunakan Trainer" berubah
-    editUseTrainerCheckbox.addEventListener('change', function () {
-        editTrainerSection.style.display = this.checked ? 'block' : 'none';
-
-        if (!this.checked) {
-            // Reset nilai jika tidak menggunakan trainer
-            editBiayaElement.value = '';
-            editPointInput.value = '';
-            editPacketTrainerSelect.value = '';
-            calculateEditTotalPrice();
-        }
-    });
-
-    // Event: Ketika paket trainer dipilih
-    editPacketTrainerSelect.addEventListener('change', function () {
-        const selectedOption = this.options[this.selectedIndex];
-        const trainerPrice = parseFloat(selectedOption.getAttribute('data-price') || 0);
-        const trainerPoint = selectedOption.getAttribute('data-point') || '';
-
-        // Update input biaya dan poin
-        editBiayaElement.value = trainerPrice;
-        editPointInput.value = trainerPoint;
-
-        // Hitung ulang total harga
-        calculateEditTotalPrice();
-    });
-
-    // Hitung tanggal akhir latihan berdasarkan paket yang dipilih dan tanggal mulai
-    function calculateEditEndTraining() {
-        const paket = editIdPaketElement.options[editIdPaketElement.selectedIndex];
+    function calculateEndTraining() {
+        const idPaketElement = document.getElementById('idpaket');
+        const startTrainingInput = document.getElementById('start_training');
+        const endTrainingInput = document.getElementById('end_training');
+        
+        // Ambil data durasi dari paket yang dipilih
+        const paket = idPaketElement.options[idPaketElement.selectedIndex];
         const days = parseInt(paket.getAttribute('data-days')) || 0;
-        const startDateValue = editStartTrainingInput.value;
+        const startDateValue = startTrainingInput.value;
 
         if (startDateValue) {
             const startDate = new Date(startDateValue);
@@ -596,113 +508,189 @@
             }
 
             // Set tanggal akhir yang sudah dihitung
-            editEndTrainingInput.value = startDate.toISOString().split('T')[0]; // Format YYYY-MM-DD
+            endTrainingInput.value = startDate.toISOString().split('T')[0]; // Format YYYY-MM-DD
         } else {
             // Reset tanggal akhir jika tanggal mulai tidak valid
-            editEndTrainingInput.value = '';
+            endTrainingInput.value = '';
         }
     }
 
-    // Event listener untuk input tanggal mulai latihan
-    editStartTrainingInput.addEventListener('change', calculateEditEndTraining);
-
-    // Event listener untuk pilihan paket
-    editIdPaketElement.addEventListener('change', calculateEditEndTraining);
-
-    // Ambil data member ketika modal dibuka
-    const editMemberModal = document.getElementById('editMemberModal');
-    editMemberModal.addEventListener('show.bs.modal', function (event) {
-        const button = event.relatedTarget; // Tombol yang memicu modal
-        const memberId = button.getAttribute('data-id'); // Ambil ID member dari tombol
-
-        const fetchUrl = `{{ route('admin.members.editmember', ':id') }}`.replace(':id', memberId);
-
-        fetch(fetchUrl)
-            .then(response => response.json())
-            .then(data => {
-                console.log('Data Member:', data);
-
-                // Isi data ke dalam form modal
-                editIdPaketElement.value = data.idpaket;
-                editBiayaElement.value = data.biaya_trainer || '';
-                editUseTrainerCheckbox.checked = data.idpacket_trainer;
-
-                // Tampilkan/matikan seksi trainer berdasarkan data
-                editTrainerSection.style.display = data.idpacket_trainer ? 'block' : 'none';
-
-                if (data.idpacket_trainer) {
-                    editUseTrainerCheckbox.checked = true;
-                    editTrainerSection.style.display = 'block';
-                } else {
-                    editUseTrainerCheckbox.checked = false;
-                    editTrainerSection.style.display = 'none';
-                }
-
-                if (data.start_training) {
-                    const startDate = new Date(data.start_training); // Format: YYYY-MM-DD HH:MM:SS
-                    const formattedStartDate = startDate.toISOString().slice(0, 19).replace('T', ' ');
-                    editStartTrainingInput.value = formattedStartDate.split(' ')[0]; // Ambil YYYY-MM-DD
-                }
-
-                if (data.end_training) {
-                    const endDate = new Date(data.end_training); // Format: YYYY-MM-DD HH:MM:SS
-                    const formattedEndDate = endDate.toISOString().slice(0, 19).replace('T', ' ');
-                    editEndTrainingInput.value = formattedEndDate.split(' ')[0]; // Ambil YYYY-MM-DD
-                }
-
-                if (data.idpacket_trainer) {
-                    editPacketTrainerSelect.value = data.idpacket_trainer;
-                    const selectedOption = editPacketTrainerSelect.options[editPacketTrainerSelect.selectedIndex];
-                    editBiayaElement.value = selectedOption.getAttribute('data-price') || '';
-                    editPointInput.value = selectedOption.getAttribute('data-point') || '';
-                }
-
-                // Hitung ulang total harga
-                calculateEditTotalPrice();
-                calculateEditEndTraining();
-            })
-            .catch(error => {
-                console.error('Error fetching member data:', error);
-            });
-    });
-});
-</script>
-<script>
     document.addEventListener('DOMContentLoaded', function () {
-        const editMemberModal = document.getElementById('editMemberModal');
-        const editMemberForm = document.getElementById('editMemberForm');
+        const editIdPaketElement = document.getElementById('edit_idpaket');
+        const editBiayaElement = document.getElementById('edit_biaya');
+        const editTotalPriceElement = document.getElementById('edit_total_price');
+        const editTotalPriceInput = document.getElementById('edit_input_total_price');
+        const editUseTrainerCheckbox = document.getElementById('edit_useTrainer');
+        const editTrainerSection = document.getElementById('edit_trainerSection');
+        const editPacketTrainerSelect = document.getElementById('edit_idpacket_trainer');
+        const editPointInput = document.getElementById('edit_point');
+        const editStartTrainingInput = document.getElementById('edit_start_training');
+        const editEndTrainingInput = document.getElementById('edit_end_training');
 
-        // Event: Ketika modal dibuka
-        editMemberModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget; // Tombol yang memicu modal
-            const memberId = button.getAttribute('data-id'); // Ambil ID member dari tombol
+        // Harga paket gym dari backend
+        const paketPrices = @json($paket->pluck('price', 'id'));
+        console.log('data harga paket:', paketPrices);
 
-            // Update action pada form
-            const formActionUrl = `{{ route('admin.members.update', ':id') }}`.replace(':id', memberId);
-            editMemberForm.action = formActionUrl;
+        // Format nilai ke mata uang Rupiah
+        function formatToRupiah(value) {
+            return value.toLocaleString('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+            });
+        }
 
-            // Ambil data member seperti sebelumnya
-            const fetchUrl = `{{ route('admin.members.editmember', ':id') }}`.replace(':id', memberId);
-            fetch(fetchUrl)
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Data Member:', data);
+        // Hitung total harga (paket + biaya trainer)
+        function calculateEditTotalPrice() {
+            const paketPrice = parseFloat(paketPrices[editIdPaketElement.value] || 0);
+            const trainerCost = parseFloat(editBiayaElement.value || 0);
+            const totalPrice = paketPrice + trainerCost;
 
-                    // Isi input form dengan data member
-                    document.getElementById('edit_idpaket').value = data.idpaket;
-                    document.getElementById('edit_start_training').value = data.start_training;
-                    document.getElementById('edit_end_training').value = data.end_training;
-                    document.getElementById('edit_biaya').value = data.biaya_trainer || '';
-                    document.getElementById('edit_useTrainer').checked = data.use_trainer;
+            // Update tampilan dan input tersembunyi
+            editTotalPriceElement.textContent = formatToRupiah(totalPrice);
+            editTotalPriceInput.value = totalPrice.toFixed(2); // Simpan dalam format angka
+        }
 
-                    // Tampilkan atau sembunyikan bagian trainer
-                    const trainerSection = document.getElementById('edit_trainerSection');
-                    trainerSection.style.display = data.use_trainer ? 'block' : 'none';
-                })
-                .catch(error => {
-                    console.error('Error fetching member data:', error);
-                });
+        // Event: Ketika paket gym dipilih
+        editIdPaketElement.addEventListener('change', calculateEditTotalPrice);
+
+        // Event: Ketika biaya trainer diubah
+        editBiayaElement.addEventListener('input', calculateEditTotalPrice);
+
+        // Event: Ketika checkbox "Gunakan Trainer" berubah
+        editUseTrainerCheckbox.addEventListener('change', function () {
+            editTrainerSection.style.display = this.checked ? 'block' : 'none';
+
+            if (!this.checked) {
+                // Reset nilai jika tidak menggunakan trainer
+                editBiayaElement.value = '';
+                editPointInput.value = '';
+                editPacketTrainerSelect.value = '';
+                calculateEditTotalPrice();
+            }
+        });
+
+        // Event: Ketika paket trainer dipilih
+        editPacketTrainerSelect.addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const trainerPrice = parseFloat(selectedOption.getAttribute('data-price') || 0);
+            const trainerPoint = selectedOption.getAttribute('data-point') || '';
+
+            // Update input biaya dan poin
+            editBiayaElement.value = trainerPrice;
+            editPointInput.value = trainerPoint;
+
+            // Hitung ulang total harga
+            calculateEditTotalPrice();
+        });
+
+        // Hitung tanggal akhir latihan berdasarkan paket yang dipilih dan tanggal mulai
+        function calculateEditEndTraining() {
+            const paket = editIdPaketElement.options[editIdPaketElement.selectedIndex];
+            const days = parseInt(paket.getAttribute('data-days')) || 0;
+            const startDateValue = editStartTrainingInput.value;
+
+            if (startDateValue) {
+                const startDate = new Date(startDateValue);
+
+                if (days > 0) {
+                    // Jika ada durasi, tambahkan durasi ke tanggal mulai
+                    startDate.setDate(startDate.getDate() + days);
+                }
+
+                // Set tanggal akhir yang sudah dihitung
+                editEndTrainingInput.value = startDate.toISOString().split('T')[0]; // Format YYYY-MM-DD
+            } else {
+                // Reset tanggal akhir jika tanggal mulai tidak valid
+                editEndTrainingInput.value = '';
+            }
+        }
+
+        // Event listener untuk input tanggal mulai latihan
+        editStartTrainingInput.addEventListener('change', calculateEditEndTraining);
+
+        // Event listener untuk pilihan paket
+        editIdPaketElement.addEventListener('change', calculateEditEndTraining);
+
+    });
+
+    function formatToRupiah(value) {
+        return value.toLocaleString('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+        });
+    }
+
+    function replaceNormalDate(val) {
+        return val.replace(/\s\d{2}:\d{2}:\d{2}/, "");
+    }
+
+    $('body').on('click', '.edit-data-member', function(e){
+        e.preventDefault();
+        let id = $(this).data('id')
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        $.ajax({
+            url : '/api/member-data',
+            type : 'POST',
+            data : {id:id},
+            success:function(res){
+                $("#editMemberModal").modal('show');
+                
+                console.log(res);
+                
+
+                $("#edit_idmember").val(res.idmember).change();
+                $("#edit_idpaket").val(res.idpaket).change();
+                $("#edit_member_id_gym").val(res.id);
+
+                $("#edit_start_training").val(replaceNormalDate(res.start_training));
+                $("#edit_end_training").val(replaceNormalDate(res.end_training));
+                $("#edit_input_total_price").val(res.total_price);
+
+                if (res.trainer != null) {
+                    
+                    setTimeout(() => {
+                        $("#edit_useTrainer").prop("checked", true);
+                        $("#edit_trainerSection").show();
+                        $("#edit_idpacket_trainer").val(res.trainer.id).change();
+                        $("#edit_biaya").val(res.trainer.price);
+                        $("#edit_point").val(res.trainer.poin);
+
+                        let total_price = formatToRupiah(res.total_price);
+                        $("#edit_total_price").html(total_price);
+                    }, 100);
+                }
+            }
+        })
+    });
+
+    $('body').on('submit', '#editMemberForm', function(e) {
+        e.preventDefault();
+
+        let idmembergym = $("#edit_member_id_gym").val();
+        let url = `/admin/members/update` + `/` + idmembergym;
+        
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: $(this).serialize(),
+            success: function(response) {
+                $("#editMemberModal").modal('hide');
+                swal("Berhasil", "Data berhasil diperbarui", "success");
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            },
+            error: function(xhr) {
+                alert("Terjadi kesalahan!");
+            }
         });
     });
+
 </script>
 @include('admin.layout.footer')

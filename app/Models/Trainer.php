@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Trainer extends Model
 {
+    protected $table = 'packet_trainer';
+
     protected $fillable = [
         'iduser',
         'idcountry',

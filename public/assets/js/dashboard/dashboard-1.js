@@ -1003,7 +1003,7 @@
 			NewCustomers();
 			NewCustomers1();
 			redial();
-			emailchart();
+			// emailchart();
 				
 			},
 			

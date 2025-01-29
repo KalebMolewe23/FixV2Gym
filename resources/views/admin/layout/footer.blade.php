@@ -6,7 +6,6 @@
 </div>
 
 	<script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
-	<script src="{{ asset('assets/vendor/chart.js') }}/Chart.bundle.min.js') }}"></script>
 	<script src="{{ asset('assets/vendor/chart.js/Chart.bundle.min.js') }}"></script>
 	<script src="{{ asset('assets/js/plugins-init/chartjs-init.js') }}"></script>
 	
@@ -32,6 +31,10 @@
     <script src="{{ asset('assets/js/custom.min.js') }}"></script>
 	<script src="{{ asset('assets/js/dlabnav-init.js') }}"></script>
 	<script src="{{ asset('assets/js/demo.js') }}"></script>
+
+	<script src="{{ asset('assets/vendor/sweetalert2/dist/sweetalert2.min.js') }}"></script>
+    <script src="{{ asset('assets/js/plugins-init/sweetalert.init.js') }}"></script>
+
     <!-- <script src="{{ asset('assets/js/styleSwitcher.js') }}"></script> -->
 	<script>
 		function cardsCenter()

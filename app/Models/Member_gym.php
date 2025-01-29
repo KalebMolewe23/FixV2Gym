@@ -22,4 +22,9 @@ class Member_gym extends Model
     'created_at',
     'updated_at'
     ];
+
+    public function trainer()
+    {
+        return $this->belongsTo(Trainer::class, 'idpacket_trainer', 'id');
+    }
 }

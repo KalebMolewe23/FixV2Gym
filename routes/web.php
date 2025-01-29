@@ -55,6 +55,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/report_allmember', [ReportMember::class, 'reportmemberDays'])->name('report_allmember');
 });
 
+// Api
+Route::post('/api/member-data', [MemberController::class, 'memberData']);
+
 Route::middleware(['auth', 'role:trainer'])->get('/trainer/dashboard', function () {
     return view('trainer.dashboard'); // Arahkan ke tampilan trainer.dashboard
 })->name('trainer.dashboard');

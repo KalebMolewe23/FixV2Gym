@@ -32,5 +32,7 @@
 	
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
 
-	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	{{-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> --}}
+
+	<link href="{{ asset('assets/vendor/sweetalert2/dist/sweetalert2.min.css') }}" rel="stylesheet">
 </head>

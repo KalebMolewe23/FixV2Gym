@@ -210,8 +210,7 @@
     function submitForm() {
         document.getElementById('memberForm').submit();
     }
-</script>
-<script>
+
     let videoStream;
     const videoElement = document.getElementById('videoStream');
     const canvasElement = document.getElementById('photoCanvas');
@@ -254,8 +253,7 @@
         videoElement.style.display = 'none';
         savePhotoButton.style.display = 'none';
     }
-</script>
-<script>
+
     const fileInput = document.getElementById('fileInput');
     const fileCanvas = document.getElementById('fileCanvas');
     const filePreview = document.getElementById('filePreview');
@@ -315,8 +313,7 @@
             alert('Tidak ada file untuk disimpan.');
         }
     }
-</script>
-<script>
+
     $(document).ready(function () {
         // Ketika Country diubah
         $('#country').on('change', function () {
@@ -348,10 +345,7 @@
                 $('#city').prop('disabled', false);
             });
         });
-    });
-</script>
-<script>
-    $(document).ready(function () {
+
         $('#confirmSaveButton').on('click', function () {
             // Ambil data dari form
             const name = $('#name').val();
@@ -387,8 +381,13 @@
                 confirmButtonText: 'Ya, Simpan!',
                 cancelButtonText: 'Batal'
             }).then((result) => {
-                if (result.isConfirmed) {
+                console.log(result.value);
+                console.log(result);
+                
+                if (result.isConfirmed || result.value == true) {
                     // Submit form jika dikonfirmasi
+                    console.log('aaa');
+                    
                     $('#memberForm').submit();
                 }
             });
