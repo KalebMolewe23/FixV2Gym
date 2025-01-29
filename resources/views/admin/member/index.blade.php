@@ -207,7 +207,9 @@
                             <select class="form-control" name="idmember" id="idmember" required>
                                 <option value="">-- Pilih Member --</option>
                                 @foreach ($member as $m)
+                                    @if ($m->end_training < now())
                                     <option value="{{ $m->id }}">{{ $m->name }}</option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>

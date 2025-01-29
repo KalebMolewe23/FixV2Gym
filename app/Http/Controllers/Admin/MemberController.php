@@ -84,7 +84,11 @@ class MemberController extends Controller
         $paket = DB::table('packets')->get();
         $paket_trainer = DB::table('packet_trainer')->get();
         $trainer = DB::table('trainers')->where('status', 'Aktif')->get();
-        $member = DB::table('users')->where('role', 'member')->get();
+
+        $member = DB::table('users')
+                ->join('member_gym', 'users.id', '=', 'member_gym.idmember')
+                ->where('users.role', 'member')
+                ->get();
 
         return view('admin.member.index', [
             'paket' => $paket,
