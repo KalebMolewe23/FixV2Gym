@@ -237,6 +237,8 @@
 
     <!-- <script src="{{ asset('assets/js/styleSwitcher.js') }}"></script> -->
 
+    @stack('js')
+
 </body>
 
 </html>
