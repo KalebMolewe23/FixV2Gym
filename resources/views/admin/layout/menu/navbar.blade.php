@@ -57,44 +57,63 @@
 							<span class="nav-text">Dashboard</span>
 						</a>	
                     </li>
+                    @can('view-member')
                     <li><a class="has-arrow " href="javascript:void()" aria-expanded="false">
-						<i class="fas fa-user"></i>
-							<span class="nav-text">Informasi Member</span>
-						</a>
+                            <i class="fas fa-user"></i>
+                            <span class="nav-text">Informasi Member</span>
+                        </a>
                         <ul aria-expanded="false">
-							<li><a href="{{ route('admin.data_member') }}">Data Member</a></li>
-							<li><a href="{{ route('admin.add_member') }}">Tambah Customer</a></li>
-						</ul>
+                            <li><a href="{{ route('admin.data_member') }}">Data Member</a></li>
+                            <li><a href="{{ route('admin.add_member') }}">Tambah Customer</a></li>
+                        </ul>
                     </li>
-					<li><a class="has-arrow " href="javascript:void()" aria-expanded="false">
-						<i class="fas fa-user-check"></i>
-							<span class="nav-text">Informasi Trainer</span>
-						</a>
+                    @endcan
+                    @can('view-trainer')
+                    <li><a class="has-arrow " href="javascript:void()" aria-expanded="false">
+                            <i class="fas fa-user-check"></i>
+                            <span class="nav-text">Informasi Trainer</span>
+                        </a>
                         <ul aria-expanded="false">
                             <li><a href="{{ route('admin.data_trainer') }}">Data Trainer</a></li>
-							<li><a href="{{ route('admin.add_trainer') }}">Tambah Trainer</a></li>
-							<li><a href="{{ route('admin.schedule') }}">Jadwal Trainer</a></li>
+                            <li><a href="{{ route('admin.add_trainer') }}">Tambah Trainer</a></li>
+                            <li><a href="{{ route('admin.schedule') }}">Jadwal Trainer</a></li>
                         </ul>
                     </li>
-					<li><a class="has-arrow " href="javascript:void()" aria-expanded="false">
-						<i class="fas fa-info-circle"></i>
-							<span class="nav-text">Laporan</span>
-						</a>
+                    @endcan
+                    @can('view-laporan')
+                    <li><a class="has-arrow " href="javascript:void()" aria-expanded="false">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="nav-text">Laporan</span>
+                        </a>
                         <ul aria-expanded="false">
-							<li><a href="{{ route('admin.report_allmember') }}">Kunjungan Harian</a></li>
+                            <li><a href="{{ route('admin.report_allmember') }}">Kunjungan Harian</a></li>
                             <li><a href="{{ route('admin.report_day') }}">Member Baru Harian</a></li>
-							<li><a href="{{ route('admin.report_memberactive') }}">Total Member Aktif</a></li>
-							<li><a href="{{ route('admin.report_membernonactive') }}">Total Member Tidak Aktif</a></li>
+                            <li><a href="{{ route('admin.report_memberactive') }}">Total Member Aktif</a></li>
+                            <li><a href="{{ route('admin.report_membernonactive') }}">Total Member Tidak Aktif</a>
+                            </li>
                         </ul>
                     </li>
-					<li><a class="has-arrow " href="javascript:void()" aria-expanded="false">
-							<i class="fa fa-cog fa-spin"></i>
-							<span class="nav-text">CMS</span>
-						</a>
+                    @endcan
+                    @can('create-role')
+                    <li><a class="has-arrow " href="javascript:void()" aria-expanded="false">
+                            <i class="fas fa-shield-alt"></i>
+                            <span class="nav-text">Role & Permission</span>
+                        </a>
                         <ul aria-expanded="false">
-							<li><a href="{{ route('admin.report_allmember') }}">Layout</a></li>
+                            <li><a href="{{ url('roles') }}">Roles</a></li>
+                            <li><a href="{{ url('permissions') }}">Permissions</a></li>
+                            <li><a href="{{ url('users') }}">Manage Users</a></li>
+                        </ul>
+                    </li>
+                    @endcan
+                    <li><a class="has-arrow " href="javascript:void()" aria-expanded="false">
+                            <i class="fa fa-cog fa-spin"></i>
+                            <span class="nav-text">CMS</span>
+                        </a>
+                        <ul aria-expanded="false">
+                            <li><a href="{{ route('admin.report_allmember') }}">Layout</a></li>
                             <li><a href="{{ route('admin.report_day') }}">Social Media</a></li>
-							<li><a href="{{ route('admin.report_memberactive') }}">WA Notif</a></li>
+                            <li><a href="{{ route('admin.report_memberactive') }}">WA Notif</a></li>
                         </ul>
                     </li>
                 </ul>

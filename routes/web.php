@@ -11,10 +11,6 @@ use App\Http\Controllers\WablasController;
 use App\Http\Controllers\Admin\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Auth;
 
-// Route::get('/', function () {
-//     return redirect()->route('admin.dashboard');
-// });
-
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/login', [AuthenticatedSessionController::class, 'store'])->name('login');
@@ -53,6 +49,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/report_memberactive', [ReportMember::class, 'reportmemberActive'])->name('report_memberactive');
     Route::get('/report_membernonactive', [ReportMember::class, 'reportmembernonActive'])->name('report_membernonactive');
     Route::get('/report_allmember', [ReportMember::class, 'reportmemberDays'])->name('report_allmember');
+    
 });
 
 // Api
@@ -75,3 +72,4 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+require __DIR__.'/roles.php';
