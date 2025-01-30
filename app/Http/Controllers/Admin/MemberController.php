@@ -16,29 +16,35 @@ use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use Spatie\Permission\Models\Role;
 
 class MemberController extends Controller
 {
     public function index()
     {
         $memberActive = DB::table('member_gym')
-            ->select('member_gym.id as id', 
-            'member_gym.iduser as iduser', 
-            'users.name as name_member', 
-            'users.barcode as barcode', 
-            'users.photo as photo', 
-            'users.upload as upload', 
-            'users.number_phone as number_phone', 
-            'packets.packet_name as packet_name', 
-            'packets.days as days', 
-            'member_gym.end_training as end_training',
-            'member_gym.start_training as start_training',
-            'packet_trainer.pertemuan as pertemuan')
+            ->select(
+                DB::raw('MAX(member_gym.id) as id'),
+                DB::raw('MAX(member_gym.iduser) as iduser'),
+                DB::raw('MAX(users.name) as name_member'),
+                DB::raw('MAX(users.barcode) as barcode'),
+                DB::raw('MAX(users.photo) as photo'),
+                DB::raw('MAX(users.upload) as upload'),
+                DB::raw('MAX(users.number_phone) as number_phone'),
+                DB::raw('MAX(packets.packet_name) as packet_name'),
+                DB::raw('MAX(packets.days) as days'),
+                DB::raw('MAX(member_gym.end_training) as end_training'),
+                DB::raw('MAX(member_gym.start_training) as start_training'),
+                DB::raw('MAX(packet_trainer.pertemuan) as pertemuan'),
+                'member_gym.idmember as idmember'
+            )
             ->leftJoin('users', 'users.id', '=', 'member_gym.idmember')
             ->leftJoin('packet_trainer', 'packet_trainer.id', '=', 'member_gym.idpacket_trainer')
             ->leftJoin('packets', 'packets.id', '=', 'member_gym.idpaket')
-            ->orderBy('member_gym.end_training', 'desc')
+            ->groupBy('member_gym.idmember') // Mengelompokkan hanya berdasarkan idmember
+            ->orderBy('end_training', 'desc') // Urutkan berdasarkan end_training yang terbaru
             ->paginate(10);
+
 
         foreach ($memberActive as $member) {
             // Generate QR Code
@@ -75,10 +81,9 @@ class MemberController extends Controller
         $paket_trainer = DB::table('packet_trainer')->get();
         $trainer = DB::table('trainers')->where('status', 'Aktif')->get();
 
-        $member = DB::table('users')
-                ->select('*','users.id AS users_id')
+        $member = User::select('*','users.id AS users_id')
                 ->leftjoin('member_gym', 'users.id', '=', 'member_gym.idmember')
-                ->where('users.role', 'member')
+                ->role('member')
                 ->get();
 
         return view('admin.member.index', [
@@ -155,7 +160,7 @@ class MemberController extends Controller
 
         $currentDate = Carbon::now()->startOfDay();
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'full_name' => $request->full_name,
             'idcountry' => $request->idcountry,
@@ -169,10 +174,15 @@ class MemberController extends Controller
             'gender' => $request->gender,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'member',
             'photo' => $photoPath,
             'upload' => $uploadPath,
         ]);
+
+        // Pastikan role yang diberikan ada di dalam database
+        $role = Role::firstOrCreate(['name' => 'member']);
+
+        // Assign role ke user
+        $user->assignRole($role);
 
         return redirect()->route('admin.data_member');
     }
@@ -241,21 +251,28 @@ class MemberController extends Controller
         $search = $request->input('search');
 
         $query = DB::table('member_gym')
-        ->select('member_gym.id as id', 
-        'member_gym.iduser as iduser', 
-        'users.name as name_member', 
-        'users.barcode as barcode', 
-        'users.photo as photo', 
-        'users.upload as upload', 
-        'users.number_phone as number_phone', 
-        'packets.packet_name as packet_name', 
-        'packets.days as days', 
-        'member_gym.end_training as end_training',
-        'member_gym.start_training as start_training',
-        'packet_trainer.pertemuan as pertemuan')
+        ->select(
+            'member_gym.id as id', 
+            'member_gym.iduser as iduser', 
+            'users.name as name_member', 
+            'users.barcode as barcode', 
+            'users.photo as photo', 
+            'users.upload as upload', 
+            'users.number_phone as number_phone', 
+            'packets.packet_name as packet_name', 
+            'packets.days as days', 
+            'member_gym.end_training as end_training',
+            'member_gym.start_training as start_training',
+            'packet_trainer.pertemuan as pertemuan'
+        )
         ->leftJoin('users', 'users.id', '=', 'member_gym.idmember')
         ->leftJoin('packet_trainer', 'packet_trainer.id', '=', 'member_gym.idpacket_trainer')
         ->leftJoin('packets', 'packets.id', '=', 'member_gym.idpaket')
+        ->whereIn('member_gym.id', function($query) {
+            $query->selectRaw('MAX(id)')
+                ->from('member_gym')
+                ->groupBy('idmember');
+        })
         ->orderBy('member_gym.end_training', 'desc');
 
         if ($search) {
