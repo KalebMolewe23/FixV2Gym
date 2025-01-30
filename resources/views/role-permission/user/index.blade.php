@@ -12,7 +12,7 @@
                 <div class="card mt-3">
                     <div class="card-header">
                         <h4>
-                            @can('create user')
+                            @can('create-user')
                             <a href="{{ url('users/create') }}" class="btn btn-sm btn-primary float-end">Add User</a>
                             @endcan
                         </h4>

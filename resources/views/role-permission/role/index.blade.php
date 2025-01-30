@@ -12,7 +12,7 @@
                 <div class="card mt-3">
                     <div class="card-header">
                         <h4>
-                            @can('create role')
+                            @can('create-role')
                                 <a href="{{ url('roles/create') }}" class="btn btn-primary btn-sm float-end">Add Role</a>
                             @endcan
                         </h4>
