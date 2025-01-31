@@ -38,16 +38,16 @@
                                     <td>
                                         @if (!empty($user->getRoleNames()))
                                             @foreach ($user->getRoleNames() as $rolename)
-                                                <label class="badge bg-primary mx-1">{{ $rolename }}</label>
+                                                <label class="badge bg-primary text-dark mx-1">{{ $rolename }}</label>
                                             @endforeach
                                         @endif
                                     </td>
                                     <td>
-                                        @can('update user')
+                                        @can('update-user')
                                         <a href="{{ url('users/'.$user->id.'/edit') }}" class="btn btn-sm btn-success">Edit</a>
                                         @endcan
 
-                                        @can('delete user')
+                                        @can('delete-user')
                                         <a href="{{ url('users/'.$user->id.'/delete') }}" class="btn btn-sm btn-danger mx-2">Delete</a>
                                         @endcan
                                     </td>

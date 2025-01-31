@@ -38,13 +38,13 @@
                                                 Add / Edit Role Permission
                                             </a>
 
-                                            @can('update role')
+                                            @can('update-role')
                                                 <a href="{{ url('roles/' . $role->id . '/edit') }}" class="btn btn-sm btn-success">
                                                     Edit
                                                 </a>
                                             @endcan
 
-                                            @can('delete role')
+                                            @can('delete-role')
                                                 <a href="{{ url('roles/' . $role->id . '/delete') }}" class="btn btn-sm btn-danger mx-2">
                                                     Delete
                                                 </a>

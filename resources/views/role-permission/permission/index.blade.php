@@ -31,13 +31,13 @@
                                 @foreach ($permissions as $permission)
                                 <tr>
                                     <td>{{ $permission->id }}</td>
-                                    <td>{{ $permission->name }}</td>
+                                    <td>{{ ucwords(str_replace('-',' ', $permission->name)) }}</td>
                                     <td>
-                                        @can('update permission')
+                                        @can('update-permission')
                                         <a href="{{ url('permissions/'.$permission->id.'/edit') }}" class="btn btn-sm btn-success">Edit</a>
                                         @endcan
 
-                                        @can('delete permission')
+                                        @can('delete-permission')
                                         <a href="{{ url('permissions/'.$permission->id.'/delete') }}" class="btn btn-sm btn-danger mx-2">Delete</a>
                                         @endcan
                                     </td>

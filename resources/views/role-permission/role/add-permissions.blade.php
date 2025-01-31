@@ -12,8 +12,7 @@
 
                 <div class="card">
                     <div class="card-header">
-                        <h4>{{ $role->name }}
-                        </h4>
+                        <h4>{{ $role->name }}</h4>
                     </div>
                     <div class="card-body">
 
@@ -23,24 +22,40 @@
 
                             <div class="mb-3">
                                 @error('permission')
-                                <span class="text-danger">{{ $message }}</span>
+                                    <span class="text-danger">{{ $message }}</span>
                                 @enderror
 
-                                <label for="">Permissions</label>
+                                <label for="">Daftar Permissions :</label>
+
+                                @php
+                                    $groupedPermissions = [];
+
+                                    foreach ($permissions as $permission) {
+                                        $parts = explode('-', $permission->name);
+                                        $category = $parts[1] ?? 'Other';
+                                        $groupedPermissions[$category][] = $permission;
+                                    }
+                                @endphp
 
                                 <div class="row">
-                                    @foreach ($permissions as $permission)
-                                    <div class="col-md-2">
-                                        <label>
-                                            <input
-                                                type="checkbox"
-                                                name="permission[]"
-                                                value="{{ $permission->name }}"
-                                                {{ in_array($permission->id, $rolePermissions) ? 'checked':'' }}
-                                            />
-                                            {{ $permission->name }}
-                                        </label>
-                                    </div>
+                                    @foreach ($groupedPermissions as $category => $perms)
+                                        <div class="col-md-12 mt-2">
+                                            <strong>{{ ucfirst($category) }}</strong>
+                                        </div>
+                                        @foreach ($perms as $permission)
+                                            <div class="col-md-2">
+                                                <label>
+                                                    <input
+                                                        type="checkbox"
+                                                        name="permission[]"
+                                                        value="{{ $permission->name }}"
+                                                        {{ in_array($permission->id, $rolePermissions) ? 'checked':'' }}
+                                                    />
+                                                    {{ ucwords(str_replace('-',' ', $permission->name)) }}
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                        <hr>
                                     @endforeach
                                 </div>
 
@@ -49,6 +64,7 @@
                                 <button type="submit" class="btn btn-sm btn-primary">Update</button>
                             </div>
                         </form>
+
                     </div>
                 </div>
             </div>
