@@ -111,7 +111,7 @@
                             <span class="nav-text">CMS</span>
                         </a>
                         <ul aria-expanded="false">
-                            <li><a href="{{ route('admin.report_allmember') }}">Layout</a></li>
+                            <li><a href="{{ url('admin/layout') }}">Layout</a></li>
                             <li><a href="{{ route('admin.report_day') }}">Social Media</a></li>
                             <li><a href="{{ route('admin.report_memberactive') }}">WA Notif</a></li>
                         </ul>
