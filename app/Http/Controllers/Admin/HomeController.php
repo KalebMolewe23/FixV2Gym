@@ -12,11 +12,11 @@ class HomeController extends Controller
 {
     public function index(){
 
-        return view('home', [
-            'daily' => $daily,
-            'montly' => $montly,
-            'trainer' => $trainer,
-            'review' => $review,
-        ]);
+        $package = Packets::where('is_active', 1)->orderBy('id', 'DESC')->get();
+        dd($package);
+
+        // return view('home', [
+        //     'daily' => $daily
+        // ]);
     }
 }
