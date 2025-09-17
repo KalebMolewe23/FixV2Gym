@@ -11,6 +11,10 @@ use App\Http\Controllers\WablasController;
 use App\Http\Controllers\Admin\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Auth;
 
+Route::get('/', function () {
+    return view('maintenance');
+});
+
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/login', [AuthenticatedSessionController::class, 'store'])->name('login');
